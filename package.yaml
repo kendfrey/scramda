@@ -1,0 +1,50 @@
+name:                scramda
+version:             0.1.0.0
+github:              "kendfrey/scramda"
+license:             MIT
+author:              "Kendall Frey"
+maintainer:          "kendfrey@gmail.com"
+copyright:           "2019 Kendall Frey"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Language
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/kendfrey/scramda#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  scramda-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - scramda
+
+tests:
+  scramda-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - scramda
+    - test-framework
+    - test-framework-hunit
+    - HUnit
