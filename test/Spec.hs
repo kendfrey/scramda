@@ -3,8 +3,8 @@
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit (assertEqual)
-import Scramda
-import Scramda.DSL
+import Language.Scramda
+import Language.Scramda.DSL
 
 main :: IO ()
 main = defaultMain tests

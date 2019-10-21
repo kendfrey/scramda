@@ -1,12 +1,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Scramda.DSL
+module Language.Scramda.DSL
   ( (!>)
   , (!)
   , a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
   ) where
 
-import Scramda
+import Language.Scramda
 
 class IsExpr a where
   expr :: a -> Expr

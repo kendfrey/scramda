@@ -1,4 +1,4 @@
-module Scramda
+module Language.Scramda
   ( Expr(..)
   ) where
 
