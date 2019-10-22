@@ -47,6 +47,27 @@ tests =
           (x `freeIn` (x !> x) ! (y ! (z !> z ! z)))
     ]
   ,
+    testGroup "substitute"
+    [
+      testCase "variable" do
+        assertEqual "Variable substitution failed"
+          (Var y)
+          (substitute x (Var y) (Var x))
+    ,
+      testCase "lambda" do
+        assertEqual "Lambda substitution failed"
+          (z !> y ! z)
+          (substitute x (Var y) (z !> x ! z))
+        assertEqual "Capture avoiding substitution failed"
+          ("y$" !> y ! "y$")
+          (substitute x (Var y) (y !> x ! y))
+    ,
+      testCase "apply" do
+        assertEqual "Apply substitution failed"
+          (y ! z)
+          (substitute x (Var y) (x ! z))
+    ]
+  ,
     testGroup "Eq"
     [
       testCase "variable" do

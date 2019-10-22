@@ -1,7 +1,10 @@
 module Language.Scramda
   ( Expr(..)
   , freeIn
+  , substitute
   ) where
+
+import Data.List
 
 data Expr = Var String | Lam String Expr | App Expr Expr
   deriving (Eq)
@@ -22,3 +25,10 @@ freeIn :: String -> Expr -> Bool
 var `freeIn` (Var x) = var == x
 var `freeIn` (Lam x e) = var /= x && var `freeIn` e
 var `freeIn` (App f x) = var `freeIn` f || var `freeIn` x
+
+substitute :: String -> Expr -> Expr -> Expr
+substitute var e v@(Var x) | var == x = e
+                           | otherwise = v
+substitute var e (Lam x e') = Lam x' . substitute var e . substitute x (Var x') $ e'
+  where x' = head . filter (not . (`freeIn` e)) . map (x ++) . inits $ repeat '$'
+substitute var e (App f x) = App (substitute var e f) (substitute var e x)
