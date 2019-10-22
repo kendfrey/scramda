@@ -11,35 +11,78 @@ main = defaultMain tests
 
 tests :: [Test]
 tests =
-  [ testGroup "Eq"
-    [ testCase "variable" do
+  [
+    testGroup "freeIn"
+    [
+      testCase "variable" do
+        assertEqual "Free variable not found"
+          True
+          (x `freeIn` Var x)
+        assertEqual "Free variable mistakenly found"
+          False
+          (x `freeIn` Var y)
+    ,
+      testCase "lambda" do
+        assertEqual "Free variable not found"
+          True
+          (x `freeIn` y !> x)
+        assertEqual "Free variable mistakenly found"
+          False
+          (x `freeIn` x !> x)
+    ,
+      testCase "apply" do
+        assertEqual "Free variable not found"
+          True
+          (x `freeIn` x ! y)
+        assertEqual "Free variable mistakenly found"
+          False
+          (x `freeIn` y ! z)
+    ,
+      testCase "combined" do
+        assertEqual "Free variable not found"
+          True
+          (y `freeIn` (x !> x) ! (y ! (z !> z ! z)))
+        assertEqual "Free variable mistakenly found"
+          False
+          (x `freeIn` (x !> x) ! (y ! (z !> z ! z)))
+    ]
+  ,
+    testGroup "Eq"
+    [
+      testCase "variable" do
         assertEqual "Variable equality failed"
           (Var "x")
           (Var "x")
-    , testCase "lambda" do
+    ,
+      testCase "lambda" do
         assertEqual "Lambda equality failed"
           (Lam "x" (Var "x"))
           (Lam "x" (Var "x"))
-    , testCase "apply" do
+    ,
+      testCase "apply" do
         assertEqual "Apply equality failed"
           (App (Var "x") (Var "y"))
           (App (Var "x") (Var "y"))
     ]
-
-  , testGroup "Show"
-    [ testCase "variable" do
+  ,
+    testGroup "Show"
+    [
+      testCase "variable" do
         assertEqual "Variable show failed"
           "x"
           (show $ Var "x")
-    , testCase "lambda" do
+    ,
+      testCase "lambda" do
         assertEqual "Lambda show failed"
           "x -> x"
           (show $ x !> x)
-    , testCase "apply" do
+    ,
+      testCase "apply" do
         assertEqual "Apply show failed"
           "x y"
           (show $ x ! y)
-    , testCase "combined" do
+    ,
+      testCase "combined" do
         assertEqual "Combined show failed"
           "(x -> x) (y (z -> z z))"
           (show $ (x !> x) ! (y ! (z !> z ! z)))

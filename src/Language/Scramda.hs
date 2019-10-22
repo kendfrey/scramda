@@ -1,5 +1,6 @@
 module Language.Scramda
   ( Expr(..)
+  , freeIn
   ) where
 
 data Expr = Var String | Lam String Expr | App Expr Expr
@@ -15,3 +16,9 @@ instance Show Expr where
       showX x@(Lam _ _) = "(" ++ show x ++ ")"
       showX x@(App _ _) = "(" ++ show x ++ ")"
       showX x = show x
+
+infix 7 `freeIn`
+freeIn :: String -> Expr -> Bool
+var `freeIn` (Var x) = var == x
+var `freeIn` (Lam x e) = var /= x && var `freeIn` e
+var `freeIn` (App f x) = var `freeIn` f || var `freeIn` x
