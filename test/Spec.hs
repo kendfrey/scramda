@@ -68,6 +68,39 @@ tests =
           (substitute x (Var y) (x ! z))
     ]
   ,
+    testGroup "whnf"
+    [
+      testCase "variable" do
+        assertEqual "Variables should be WHNF"
+          (Var x)
+          (whnf $ Var x)
+    ,
+      testCase "lambda" do
+        assertEqual "Lambdas should be WHNF"
+          (x !> x)
+          (whnf $ x !> x)
+    ,
+      testCase "apply" do
+        assertEqual "Apply should not be WHNF"
+          (Var y)
+          (whnf $ (x !> x) ! y)
+    ,
+      testCase "whnf" do
+        assertEqual "Should not reduce to NF"
+          (x !> x ! ((y !> y) ! x))
+          (whnf $ x !> x ! ((y !> y) ! x))
+    ,
+      testCase "eta-whnf" do
+        assertEqual "Should reduce to eta-WHNF"
+          (Var y)
+          (whnf $ x !> y ! x)
+    ,
+      testCase "normal-order reduction" do
+        assertEqual "Should use normal-order reduction"
+          (Var y)
+          (whnf $ (x !> y) ! ((x !> x ! x) ! (x !> x ! x)))
+    ]
+  ,
     testGroup "Eq"
     [
       testCase "variable" do
