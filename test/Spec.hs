@@ -101,6 +101,19 @@ tests =
           (whnf $ (x !> y) ! ((x !> x ! x) ! (x !> x ! x)))
     ]
   ,
+    testGroup "nf"
+    [
+      testCase "nf" do
+        assertEqual "Should reduce to NF"
+          (x !> x ! x)
+          (nf $ x !> x ! ((y !> y) ! x))
+    ,
+      testCase "normal-order reduction" do
+        assertEqual "Should use normal-order reduction"
+          (Var y)
+          (nf $ (x !> y) ! ((x !> x ! x) ! (x !> x ! x)))
+    ]
+  ,
     testGroup "Eq"
     [
       testCase "variable" do

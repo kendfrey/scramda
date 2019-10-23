@@ -1,6 +1,7 @@
 module Language.Scramda
   ( Expr(..)
   , freeIn
+  , nf
   , substitute
   , whnf
   ) where
@@ -38,8 +39,15 @@ substitute var e (App f x) = App (substitute var e f) (substitute var e x)
 whnf :: Expr -> Expr
 whnf (Lam x (App f (Var x'))) | x == x' && not (x `freeIn` f) = whnf f
 whnf (App f x) = fromMaybe (App f' x) $ whnf <$> apply f' x
-  where
-    f' = whnf f
-    apply (Lam x e) x' = Just $ substitute x x' e
-    apply _ _ = Nothing
+  where f' = whnf f
 whnf e = e
+
+nf :: Expr -> Expr
+nf (Lam x e) = whnf . Lam x . nf $ e
+nf (App f x) = fromMaybe (App f' (nf x)) $ nf <$> apply f' x
+  where f' = nf f
+nf e = whnf e
+
+apply :: Expr -> Expr -> Maybe Expr
+apply (Lam x e) x' = Just $ substitute x x' e
+apply _ _ = Nothing
