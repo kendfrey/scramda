@@ -4,6 +4,8 @@ module Language.Scramda
   , nf
   , substitute
   , toInt
+  , toIntMaybe
+  , toIO
   , whnf
   ) where
 
@@ -13,9 +15,9 @@ import Data.Maybe
 data Expr = Var String
           | Lam String Expr
           | App Expr Expr
-          | IntCounter
-          | IntValue Int
-  deriving (Eq)
+          | PrimFunc (Expr -> Maybe Expr)
+          | PrimInt Int
+          | PrimIO (IO Expr)
 
 instance Show Expr where
   show (Var s) = s
@@ -27,8 +29,16 @@ instance Show Expr where
     showX x@(Lam _ _) = "(" ++ show x ++ ")"
     showX x@(App _ _) = "(" ++ show x ++ ")"
     showX x = show x
-  show IntCounter = "{IntCounter}"
-  show (IntValue x) = "{Int:" ++ show x ++ "}"
+  show (PrimFunc _) = "{Primitive Function}"
+  show (PrimInt x) = "{Primitive Int:" ++ show x ++ "}"
+  show (PrimIO _) = "{Primitive IO}"
+
+instance Eq Expr where
+  (Var x) == (Var y) = x == y
+  (Lam x e) == (Lam x' e') = x == x' && e == e'
+  (App f x) == (App f' x') = f == f' && x == x'
+  (PrimInt x) == (PrimInt y) = x == y
+  _ == _ = False
 
 infix 7 `freeIn`
 freeIn :: String -> Expr -> Bool
@@ -59,14 +69,31 @@ nf e = whnf e
 
 apply :: Expr -> Expr -> Maybe Expr
 apply (Lam x e) x' = Just $ substitute x x' e
-apply IntCounter x = applyInt $ nf x
-  where
-  applyInt (IntValue x) = Just . IntValue $ x + 1
-  applyInt _ = Nothing
+apply (PrimFunc f) x = f x
 apply _ _ = Nothing
 
 toInt :: Expr -> Int
-toInt x = toInt' . nf $ App (App x IntCounter) (IntValue 0)
+toInt x = toInt' . nf $ App (App x (PrimFunc (inc . nf))) (PrimInt 0)
   where
-  toInt' (IntValue x) = x
+  inc (PrimInt x) = Just . PrimInt $ x + 1
+  inc _ = Nothing
+  toInt' (PrimInt x) = x
   toInt' x = error $ "Expression did not evaluate to an integer: " ++ show x
+
+-- TODO clean this up
+toIntMaybe :: Expr -> Maybe Int
+toIntMaybe x = toIntMaybe' . nf $ App (App x (PrimFunc (inc . nf))) (PrimInt 0)
+  where
+  inc (PrimInt x) = Just . PrimInt $ x + 1
+  inc _ = Nothing
+  toIntMaybe' (PrimInt x) = Just x
+  toIntMaybe' _ = Nothing
+
+toIO :: Expr -> IO Expr
+toIO e = toIO' $ nf e
+  where
+  toIO' (PrimIO io) = io
+  toIO' (App io e) = do
+    e' <- toIO io
+    toIO (App e e')
+  toIO' e = error $ "Expression did not evaluate to an IO: " ++ show e
