@@ -3,7 +3,6 @@ module Language.Scramda
   , freeIn
   , nf
   , substitute
-  , toInt
   , toIntMaybe
   , toIO
   , whnf
@@ -72,15 +71,6 @@ apply (Lam x e) x' = Just $ substitute x x' e
 apply (PrimFunc f) x = f x
 apply _ _ = Nothing
 
-toInt :: Expr -> Int
-toInt x = toInt' . nf $ App (App x (PrimFunc (inc . nf))) (PrimInt 0)
-  where
-  inc (PrimInt x) = Just . PrimInt $ x + 1
-  inc _ = Nothing
-  toInt' (PrimInt x) = x
-  toInt' x = error $ "Expression did not evaluate to an integer: " ++ show x
-
--- TODO clean this up
 toIntMaybe :: Expr -> Maybe Int
 toIntMaybe x = toIntMaybe' . nf $ App (App x (PrimFunc (inc . nf))) (PrimInt 0)
   where
